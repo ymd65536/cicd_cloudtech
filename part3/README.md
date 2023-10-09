@@ -125,7 +125,13 @@ CodeCommitはAWS CLIの実行でプルリクエストの作成とプルリクエ
 - プルリクエストID
 - コミットID
 
-まずはプルリクエストをCodeCommit上に作成します。
+リポジトリを参照するため、ディレクトリを変更します。
+
+```sh
+cd ~/Desktop/cicdhandson
+```
+
+プルリクエストをCodeCommit上に作成します。
 
 ```sh
 PULL_REQUEST_ID=`aws codecommit create-pull-request --title "part3" --description "part3 lambda ci/cd 2" --targets repositoryName=cicdhandson,sourceReference=lambda_handson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text` && echo $PULL_REQUEST_ID
