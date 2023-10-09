@@ -124,20 +124,22 @@ aws cloudformation deploy --stack-name infra-part4 --template-file ./cfn/infra-p
 
 ### プルリクエストを作成する
 
+環境構築は以上です。ここからは実際に動かしてみましょう。
+リポジトリを参照するため、ディレクトリを変更します。
+
+```sh
+cd ~/Desktop/cicdhandson
+```
+
 変更をmainブランチにマージするためにCodeCommit上でプルリクエストを作成します。
 
 ```sh
-# プルリクエストを作成する
-aws codecommit create-pull-request --title "part4" --description "part4 lambda ci/cd" --targets repositoryName=cicdhandson,sourceReference=sam_handson --profile cicd_handson
+PULL_REQUEST_ID=`aws codecommit create-pull-request --title "part4" --description "part4 lambda ci/cd" --targets repositoryName=cicdhandson,sourceReference=sam_handson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text` && echo $PULL_REQUEST_ID
 ```
 
-```sh
-# プルリクエストIDを環境変数PULL_REQUEST_IDに保存する
-PULL_REQUEST_ID=`aws codecommit list-pull-requests --profile cicd_handson --pull-request-status OPEN --repository-name cicdhandson --query 'pullRequestIds' --output text` && echo $PULL_REQUEST_ID
-```
+コミットIDを取得します。
 
 ```sh
-# コミットIDを環境変数COMMITIDに保存する
 COMMITID=`aws codecommit get-branch --repository-name cicdhandson --branch-name sam_handson --profile cicd_handson --query 'branch.commitId' --output text` && echo $COMMITID
 ```
 
@@ -148,11 +150,11 @@ PULL_REQUEST_IDとCOMMITIDを元にブランチをマージします。
 [リンク](https://ap-northeast-1.console.aws.amazon.com/codesuite/codepipeline/pipelines)
 
 ```sh
-aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUEST_ID --source-commit-id $COMMITID --repository-name cicdhandson --profile cicd_handson
+aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUEST_ID --source-commit-id $COMMITID --repository-name cicdhandson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text
 ```
 
 およそ3分程度でデプロイが完了します。CodeBuildのBuild historyに`Succeeded`と表示されていれば、問題ありません。
-![10.png](./img_part4/10.png)
+![10.png](./img/10.png)
 
 ### CodeDeployでアプリケーションをデプロイ
 
@@ -192,12 +194,10 @@ git push -u
 変更をmainブランチにマージするためにCodeCommit上でプルリクエストを作成します。
 
 ```sh
-# プルリクエストを作成する
-aws codecommit create-pull-request --title "CodeDeploy" --description "codedeploy deploy" --targets repositoryName=cicdhandson,sourceReference=sam_handson --profile cicd_handson
+PULL_REQUEST_ID=`aws codecommit create-pull-request --title "CodeDeploy" --description "codedeploy deploy" --targets repositoryName=cicdhandson,sourceReference=sam_handson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text` && echo $PULL_REQUEST_ID
 ```
 
 ```sh
-# プルリクエストIDを環境変数PULL_REQUEST_IDに保存する
 PULL_REQUEST_ID=`aws codecommit list-pull-requests --profile cicd_handson --pull-request-status OPEN --repository-name cicdhandson --query 'pullRequestIds' --output text` && echo $PULL_REQUEST_ID
 ```
 
@@ -213,7 +213,7 @@ PULL_REQUEST_IDとCOMMITIDを元にブランチをマージします。
 [リンク](https://ap-northeast-1.console.aws.amazon.com/codesuite/codepipeline/pipelines)
 
 ```sh
-aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUEST_ID --source-commit-id $COMMITID --repository-name cicdhandson --profile cicd_handson
+aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUEST_ID --source-commit-id $COMMITID --repository-name cicdhandson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text
 ```
 
 ### CodeDeployで動作を見る
@@ -222,4 +222,4 @@ CodePipelineが動作している際にCodeDeployの画面を開くとアプリ�
 [CodeDeployのリンク](https://ap-northeast-1.console.aws.amazon.com/codesuite/codedeploy/deployments)を開き、`my-date-time-app-ServerlessDeploymentApplication-XXXX`と表示されている項目にチェックを入れ、`View details`をクリックします。
 
 ※トラフィックが徐々に移行していることがわかる画面
-![11.png](./img_part4/11.png)
+![11.png](./img/11.png)
