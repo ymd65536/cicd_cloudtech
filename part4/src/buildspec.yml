@@ -1,0 +1,13 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo sam package
+      - sam package --template-file template.yml --output-template-file package.yml --s3-bucket $SAM_BUCKET_NAME
+  build:
+    commands:
+      - echo Build started on `date`
+      - sam deploy --template-file package.yml --stack-name my-date-time-app --capabilities CAPABILITY_IAM
+  post_build:
+    commands:
+      - echo Build completed on `date`
