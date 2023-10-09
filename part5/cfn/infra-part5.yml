@@ -1,0 +1,296 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: cicd_handson
+Parameters:
+  PjName:
+    Type: String
+    Default: cicdhandson
+Resources:
+  CiCdHandsonCodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: CiCdHandsonCodeBuildRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "codebuild.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref CiCdHandsonCodeBuildPolicy
+      Tags:
+        - Key: Name
+          Value: !Sub "${PjName}"
+  CiCdHandsonCodeBuildPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: codebuild-role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+            Resource:
+              - !GetAtt CICDHandsonCodeBuildECR.Arn
+          - Effect: Allow
+            Action:
+              - "ecr:CompleteLayerUpload"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:PutImage"
+            Resource:
+              - !GetAtt CICDHandsonCodeBuildECR.Arn
+          - Effect: Allow
+            Action:
+              - "ecr:GetAuthorizationToken"
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+              - "logs:CreateLogGroup"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:GetObjectVersion"
+              - "s3:GetBucketAcl"
+              - "s3:GetBucketLocation"
+            Resource:
+              - !Join
+                - ""
+                - - !GetAtt CICDHandsonBucket.Arn
+                  - "/*"
+              - !GetAtt CICDHandsonBucket.Arn
+  # CodeBuild
+  CICDHandsonCodeBuildPj:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Description: CodeBuild
+      Environment:
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Type: PLAINTEXT
+            Value: !Ref AWS::Region
+          - Name: AWS_ACCOUNT_ID
+            Type: PLAINTEXT
+            Value: !Ref AWS::AccountId
+          - Name: IMAGE_REPO_NAME
+            Type: PLAINTEXT
+            Value: !Sub "${PjName}"
+          - Name: IMAGE_TAG
+            Type: PLAINTEXT
+            Value: latest
+
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:4.0
+        Type: LINUX_CONTAINER
+        PrivilegedMode: true
+      Name: !Sub "${PjName}"
+      ServiceRole: !Ref CiCdHandsonCodeBuildRole
+      Source:
+        BuildSpec: buildspec.yml
+        Type: CODEPIPELINE
+      Tags:
+        - Key: Name
+          Value: cicd_handson
+  # CloudWatch Logs
+  CICDHandsonCloudWatchLogs:
+    Type: "AWS::Logs::LogGroup"
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub "${PjName}"
+      RetentionInDays: 60
+      Tags:
+        - Key: Name
+          Value: !Sub "${PjName}"
+  # EventBridge
+  EventBridgeIAMPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "codepipeline:StartPipelineExecution"
+            Resource:
+              - !Join [
+                  "",
+                  [
+                    "arn:aws:codepipeline:ap-northeast-1:",
+                    !Sub "${AWS::AccountId}:",
+                    !Sub "${PjName}-pipeline",
+                  ],
+                ]
+      ManagedPolicyName: iam-policy-eventbridge
+  EventBridgeIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref EventBridgeIAMPolicy
+      RoleName: iam-role-eventbridge
+      Tags:
+        - Key: Name
+          Value: !Sub "${PjName}"
+  CICDHandsonCodePipelineIAMPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "codecommit:CancelUploadArchive"
+              - "codecommit:GetBranch"
+              - "codecommit:GetCommit"
+              - "codecommit:GetRepository"
+              - "codecommit:GetUploadArchiveStatus"
+              - "codecommit:UploadArchive"
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - "codebuild:BatchGetBuilds"
+              - "codebuild:StartBuild"
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+              - "s3:GetObjectVersion"
+              - "s3:GetBucketAcl"
+              - "s3:GetBucketLocation"
+            Resource:
+              - !Join
+                - ""
+                - - !GetAtt CICDHandsonBucket.Arn
+                  - "/*"
+              - !GetAtt CICDHandsonBucket.Arn
+      ManagedPolicyName: iam-policy-codepipeline
+  CICDHandsonCodePipelineIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref CICDHandsonCodePipelineIAMPolicy
+      RoleName: iam-role-codepipeline
+      Tags:
+        - Key: Name
+          Value: !Sub "${PjName}"
+  CICDHandsonCodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Location: !Ref CICDHandsonBucket
+        Type: S3
+      Name: !Sub "${PjName}-pipeline"
+      RoleArn: !GetAtt CICDHandsonCodePipelineIAMRole.Arn
+      Stages:
+        - Actions:
+            - ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeCommit
+                Version: 1
+              Configuration:
+                RepositoryName: !ImportValue "CodeRepositoryName"
+                BranchName: main
+                PollForSourceChanges: false
+                OutputArtifactFormat: CODE_ZIP
+              Name: Source
+              Namespace: SourceVariables
+              OutputArtifacts:
+                - Name: SourceArtifact
+              Region: ap-northeast-1
+              RunOrder: 1
+          Name: Source
+        - Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref CICDHandsonCodeBuildPj
+              InputArtifacts:
+                - Name: SourceArtifact
+              Name: Build
+              Namespace: BuildVariables
+              OutputArtifacts:
+                - Name: BuildArtifact
+              Region: ap-northeast-1
+              RunOrder: 1
+          Name: Build
+      Tags:
+        - Key: Name
+          Value: !Sub "${PjName}"
+  EventBridge:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: for codepipeline
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - "CodeCommit Repository State Change"
+        resources:
+          - !ImportValue "CodeRepositoryArn"
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - main
+      Name: cicdhandson-codepipeline
+      State: ENABLED
+      Targets:
+        - Arn:
+            !Join [
+              "",
+              [
+                "arn:aws:codepipeline:ap-northeast-1:",
+                !Sub "${AWS::AccountId}:",
+                !Sub "${PjName}-pipeline",
+              ],
+            ]
+          Id: !Sub "${PjName}-pipeline"
+          RoleArn: !GetAtt EventBridgeIAMRole.Arn
+  # ECR
+  CICDHandsonCodeBuildECR:
+    Type: "AWS::ECR::Repository"
+    Properties:
+      RepositoryName: !Sub "${PjName}"
+Outputs:
+  CodeBuildPj:
+    Value: !Ref CICDHandsonCodeBuildPj
+    Export:
+      Name: CICDHandsonCodeBuildPj
