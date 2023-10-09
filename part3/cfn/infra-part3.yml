@@ -307,3 +307,7 @@ Outputs:
     Value: !Ref CICDHandsonCodeBuildPj
     Export:
       Name: CICDHandsonCodeBuildPj
+  CICDHandsonRepositoryUri:
+    Value: !GetAtt CICDHandsonCodeBuildECR.RepositoryUri
+    Export:
+      Name: CICDHandsonECRRepositoryUri
