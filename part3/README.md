@@ -167,7 +167,7 @@ CloudFormationでLambdaを構築します。
 以下のコマンドで`lambda.yml`をCloudFormationで実行します。
 
 ```sh
-aws cloudformation deploy --stack-name lambda --template-file ./lambda.yml --tags Name=cicdhandson --capabilities CAPABILITY_NAMED_IAM --profile cicd_handson
+aws cloudformation deploy --stack-name lambda --template-file ./cfn/lambda.yml --tags Name=cicdhandson --capabilities CAPABILITY_NAMED_IAM --profile cicd_handson
 ```
 
 以降はこのLambdaを使って関数をテストします。
