@@ -125,7 +125,7 @@ cd ~/Desktop/cicd_cloudtech/part3
 Part3用のテンプレート、`infra-part3.yml`を適用します。
 
 ```sh
-aws cloudformation deploy --stack-name infra-part3 --template-file ./cfn/infra-part3.yml --tags Name=cicdhandson --profile cicd_handson
+aws cloudformation deploy --stack-name infra-part3 --template-file ./cfn/infra-part3.yml --tags Name=cicdhandson --capabilities CAPABILITY_NAMED_IAM --profile cicd_handson
 ```
 
 ### プルリクエストを作成する
@@ -141,13 +141,7 @@ CodeCommitはAWS CLIの実行でプルリクエストの作成とプルリクエ
 まずはプルリクエストをCodeCommit上に作成します。
 
 ```sh
-aws codecommit create-pull-request --title "part3" --description "part3 lambda ci/cd" --targets repositoryName=cicdhandson,sourceReference=lambda_handson --profile cicd_handson
-```
-
-プルリクエストIDを取得します。
-
-```sh
-PULL_REQUEST_ID=`aws codecommit list-pull-requests --profile cicd_handson --pull-request-status OPEN --repository-name cicdhandson --query 'pullRequestIds' --output text` && echo $PULL_REQUEST_ID
+PULL_REQUEST_ID=`aws codecommit create-pull-request --title "part3" --description "part3 lambda ci/cd 2" --targets repositoryName=cicdhandson,sourceReference=lambda_handson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text` && echo $PULL_REQUEST_ID
 ```
 
 コミットIDを取得します。
@@ -161,7 +155,7 @@ COMMITID=`aws codecommit get-branch --repository-name cicdhandson --branch-name 
 最後にプルリクエストID、コミットIDの2つを利用してブランチをマージします。
 
 ```sh
-aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUEST_ID --source-commit-id $COMMITID --repository-name cicdhandson --profile cicd_handson
+aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUEST_ID --source-commit-id $COMMITID --repository-name cicdhandson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text
 ```
 
 ブランチをマージしたことによってCodePipelineが動作し、イメージが自動で作成されます。
