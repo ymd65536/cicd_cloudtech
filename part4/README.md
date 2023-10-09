@@ -76,7 +76,7 @@ git checkout -b sam_handson
 
 ### ファイルをコピーする
 
-以下の3つのファイルをデスクトップにある`cicdhandson`にコピーします。
+以下の`buildspec.yml`をデスクトップにある`cicdhandson`にコピーします。
 
 - buildspec.yml
   - CodeBuildで利用する設定ファイル
