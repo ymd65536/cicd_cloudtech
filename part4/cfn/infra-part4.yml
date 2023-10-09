@@ -44,6 +44,7 @@ Resources:
               - "iam:AttachRolePolicy"
               - "iam:GetRole"
               - "iam:PassRole"
+              - "iam:TagRole"
               - "codedeploy:CreateDeployment"
               - "codedeploy:DeleteDeployment"
               - "codedeploy:CreateApplication"
@@ -169,7 +170,7 @@ Resources:
     Properties:
       VersioningConfiguration:
         Status: "Suspended"
-      BucketName: !Sub "${PjName}-bucket-${AWS::AccountId}"
+      BucketName: !Sub "sam-build-bucket-${AWS::AccountId}"
       AccessControl: "Private"
       Tags:
         - Key: "Name"
