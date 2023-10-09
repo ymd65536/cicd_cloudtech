@@ -27,6 +27,24 @@ cd ~/Desktop/cicd_cloudtech/part4
 aws cloudformation deploy --stack-name codecommit --template-file ./cfn/codecommit.yml --tags Name=cicdhandson --profile cicd_handson
 ```
 
+### CodeCommitのリポジトリをCloneする
+
+Desktop上にCodeCommitのリポジトリをcloneします。
+
+```sh
+cd ~/Desktop
+```
+
+```sh
+git clone codecommit::ap-northeast-1://cicd_handson@cicdhandson
+```
+
+ディレクトリを移動します。
+
+```sh
+cd ~/Desktop/cicdhandson
+```
+
 ### mainブランチを作成
 
 cloneしたばかりのリポジトリにはmainブランチがありません。
@@ -60,12 +78,6 @@ git push --set-upstream origin main
 
 ### sam_handsonブランチを切る
 
-リポジトリを参照するため、ディレクトリを変更します。
-
-```sh
-cd ~/Desktop/cicdhandson
-```
-
 新しいブランチでビルドを実行する為にCodeBuild用に新しくブランチを切ります。
 ハンズオンではmainブランチをビルド対象としています。その為、mainブランチを変更するのではなくmainブランチをソースに別のブランチを作成します。
 作成したブランチで変更を管理します。
@@ -93,7 +105,7 @@ cp ~/Desktop/cicd_cloudtech/part4/src/buildspec.yml ~/Desktop/cicdhandson/ && ls
 ソースコードをCodeCommitリポジトリにコピーします。
 
 ```sh
-cp ~/Desktop/cicd_cloudtech/part4/SAM-Tutorial/* ~/Desktop/cicdhandson/
+cp ~/Desktop/cicd_cloudtech/part4/src/SAM-Tutorial/* ~/Desktop/cicdhandson/ && ls -la
 ```
 
 ### リモートリポジトリを更新する
@@ -125,12 +137,6 @@ aws cloudformation deploy --stack-name infra-part4 --template-file ./cfn/infra-p
 ### プルリクエストを作成する
 
 環境構築は以上です。ここからは実際に動かしてみましょう。
-リポジトリを参照するため、ディレクトリを変更します。
-
-```sh
-cd ~/Desktop/cicdhandson
-```
-
 変更をmainブランチにマージするためにCodeCommit上でプルリクエストを作成します。
 
 ```sh
@@ -198,11 +204,6 @@ PULL_REQUEST_ID=`aws codecommit create-pull-request --title "CodeDeploy" --descr
 ```
 
 ```sh
-PULL_REQUEST_ID=`aws codecommit list-pull-requests --profile cicd_handson --pull-request-status OPEN --repository-name cicdhandson --query 'pullRequestIds' --output text` && echo $PULL_REQUEST_ID
-```
-
-```sh
-# コミットIDを環境変数COMMITIDに保存する
 COMMITID=`aws codecommit get-branch --repository-name cicdhandson --branch-name sam_handson --profile cicd_handson --query 'branch.commitId' --output text` && echo $COMMITID
 ```
 
