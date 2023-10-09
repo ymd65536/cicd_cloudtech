@@ -155,16 +155,6 @@ aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUES
 aws ecr list-images --profile cicd_handson --repository-name cicdhandson --query "imageIds[*].imageDigest" --output table
 ```
 
-今回はこの文字列がdockerfileに記載の文字列と一致します。
-
-```text
------------------------------------------------------------------------------
-|                                ListImages                                 |
-+---------------------------------------------------------------------------+
-|  sha256:70f9eda4317cdce66c06fe1a699cae9bb1627cac91e1c9c6a09f6b3572fd56b4  |
-+---------------------------------------------------------------------------+
-```
-
 イメージダイジェストが表示されない場合はまだビルドされていない可能性があるため、ビルドされるまでしばらく待ちましょう。
 
 ### App Runnerにコンテナをデプロイする

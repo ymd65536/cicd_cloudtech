@@ -16,9 +16,9 @@ Resources:
         AutoDeploymentsEnabled: true
         ImageRepository:
           ImageConfiguration:
-            Port: "80"
+            Port: "443"
           ImageIdentifier:
-            !Join [":", [!ImportValue CICDHandsonECRImageURL, "latest"]]
+            !Join [":", [!ImportValue CICDHandsonECRRepositoryUri, "latest"]]
           ImageRepositoryType: ECR
         AuthenticationConfiguration:
           AccessRoleArn: !GetAtt CICDHandsonAppRunnerIAMRole.Arn

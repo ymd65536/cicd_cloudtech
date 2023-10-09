@@ -112,6 +112,17 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${PjName}"
+  # Save Artifact
+  CICDHandsonBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: "Suspended"
+      BucketName: !Sub "${PjName}-bucket-${AWS::AccountId}"
+      AccessControl: "Private"
+      Tags:
+        - Key: "Name"
+          Value: !Sub "${PjName}"
   # EventBridge
   EventBridgeIAMPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -290,6 +301,10 @@ Resources:
     Properties:
       RepositoryName: !Sub "${PjName}"
 Outputs:
+  CICDHandsonRepositoryUri:
+    Value: !GetAtt CICDHandsonCodeBuildECR.RepositoryUri
+    Export:
+      Name: CICDHandsonECRRepositoryUri
   CodeBuildPj:
     Value: !Ref CICDHandsonCodeBuildPj
     Export:
