@@ -73,35 +73,22 @@ git push --set-upstream origin main
 git checkout -b lambda_handson
 ```
 
-### buildspec.yamlを作成する
+### ファイルをコピーする
 
-CodeBuildで利用する設定ファイル（buildspec.yml）を作成します。
+以下の3つのファイルをデスクトップにある`cicdhandson`にコピーします。
+
+- buildspec.yml
+  - CodeBuildで利用する設定ファイル
+- dockerfile
+- app.py
+  - Lambdaで実行するスクリプト
+  - Lambdaを実行する際には`aws lambda invoke`コマンドを利用します。
+
 part3ディレクトリにあるbuildspec.ymlを`cicd_handson`リポジトリにコピーします。
 
 ```sh
-cp ~/Desktop/cicd_cloudtech/part3/src/buildspec.yml ~/Desktop/cicdhandson/
+cp ~/Desktop/cicd_cloudtech/part3/src/* ~/Desktop/cicdhandson/ && ls -la
 ```
-
-### dockerfileを作成する
-
-dockerfileを追加します。
-`aws_code_happy`リポジトリに戻り、part3ディレクトリにあるdockerfileを`cicd_handson`リポジトリにコピーします。
-
-```sh
-cp ~/Desktop/cicd_cloudtech/part3/src/dockerfile ~/Desktop/cicdhandson/
-```
-
-このdockerfileはCodeBuild上でビルドするイメージについて書かれています。
-
-### app.pyを追加
-
-Pythonスクリプト（ap.py）を追加します。この`app.py`はLambdaで実行するスクリプトになります。
-
-```sh
-cp ~/Desktop/cicd_cloudtech/part3/src/app.py ~/Desktop/cicdhandson/
-```
-
-なお、Lambdaを実行する際には`aws lambda invoke`コマンドを利用します。
 
 ### リモートリポジトリを更新する
 
@@ -158,7 +145,7 @@ COMMITID=`aws codecommit get-branch --repository-name cicdhandson --branch-name 
 aws codecommit merge-pull-request-by-fast-forward --pull-request-id $PULL_REQUEST_ID --source-commit-id $COMMITID --repository-name cicdhandson --profile cicd_handson --query 'pullRequest.pullRequestId' --output text
 ```
 
-ブランチをマージしたことによってCodePipelineが動作し、イメージが自動で作成されます。
+ブランチをマージしたことによってCodePipelineが動作し、イメージが自動で作成されます。イメージのビルドが時間がかかりますのでしばらく待ちましょう。
 ビルドされたイメージを使ってLambda関数を作成します。
 
 ### Lambdaを関数を作成する

@@ -35,7 +35,7 @@ Resources:
               - "ecr:BatchGetImage"
               - "ecr:BatchCheckLayerAvailability"
             Resource:
-              - !GetAtt CICDHandsonBucket.Arn
+              - !GetAtt CICDHandsonCodeBuildECR.Arn
           - Effect: Allow
             Action:
               - "ecr:CompleteLayerUpload"
@@ -43,7 +43,7 @@ Resources:
               - "ecr:UploadLayerPart"
               - "ecr:PutImage"
             Resource:
-              - !GetAtt CICDHandsonBucket.Arn
+              - !GetAtt CICDHandsonCodeBuildECR.Arn
           - Effect: Allow
             Action:
               - "ecr:GetAuthorizationToken"
