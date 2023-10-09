@@ -22,7 +22,7 @@ def delete_stack(cloudformation, stackname):
         waiter = cloudformation.get_waiter('stack_delete_complete')
         waiter.wait(StackName=stackname,
                     WaiterConfig={
-                        'Delay': 60,
+                        'Delay': 20,
                         'MaxAttempts': 3
                     })
     except Exception as e:
