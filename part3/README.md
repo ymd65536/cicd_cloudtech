@@ -176,7 +176,7 @@ aws lambda invoke --profile cicd_handson --function-name "cicdhandsonFunc" --inv
 まずはアカウントIDを取得します。このアカウントIDを次のコマンドで利用します。
 
 ```bash
-ACCOUNT_ID=`aws sts get-caller-identity --profile cicd_handson --query 'Account' --output text` && echo $ACCOUNT_ID
+ACCOUNT_ID=`aws sts get-caller-identity --profile cicd_handson --query 'Account' --output text`
 ```
 
 現在のLambda関数でバージョンを作成するため、バージョン番号を取得します。
@@ -213,6 +213,7 @@ git checkout lambda_handson
 `app.py`を以下のように修正します。
 
 ```py
+
 def lambda_handler(event, context):
 
     return {
